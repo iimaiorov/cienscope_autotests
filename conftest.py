@@ -8,6 +8,8 @@ from api.api_manager import ApiManager
 from utils.data_generator import DataGenerator
 
 dotenv.load_dotenv()
+
+
 @pytest.fixture()
 def test_user():
     """
