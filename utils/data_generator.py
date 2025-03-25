@@ -57,7 +57,35 @@ class DataGenerator:
             {"word": "интеграция", "gender": "f"},
             {"word": "сборка", "gender": "f"},
             {"word": "инцидент", "gender": "m"},
-            {"word": "фича", "gender": "f"}
+            {"word": "фича", "gender": "f"},
+            {"word": "сервис", "gender": "m"},
+            {"word": "лог", "gender": "m"},
+            {"word": "сессия", "gender": "f"},
+            {"word": "запрос", "gender": "m"},
+            {"word": "ответ", "gender": "m"},
+            {"word": "событие", "gender": "n"},
+            {"word": "поток", "gender": "m"},
+            {"word": "процесс", "gender": "m"},
+            {"word": "система", "gender": "f"},
+            {"word": "платформа", "gender": "f"},
+            {"word": "модуль", "gender": "m"},
+            {"word": "компонент", "gender": "m"},
+            {"word": "интерфейс", "gender": "m"},
+            {"word": "конфигурация", "gender": "f"},
+            {"word": "параметр", "gender": "m"},
+            {"word": "переменная", "gender": "f"},
+            {"word": "функция", "gender": "f"},
+            {"word": "метод", "gender": "m"},
+            {"word": "объект", "gender": "m"},
+            {"word": "класс", "gender": "m"},
+            {"word": "структура", "gender": "f"},
+            {"word": "алгоритм", "gender": "m"},
+            {"word": "библиотека", "gender": "f"},
+            {"word": "фреймворк", "gender": "m"},
+            {"word": "репозиторий", "gender": "m"},
+            {"word": "сборка", "gender": "f"},
+            {"word": "деплоймент", "gender": "m"},
+            {"word": "инфраструктура", "gender": "f"}
         ]
 
         # Словарь прилагательных по роду (с акцентом на QA и разработку)
@@ -118,5 +146,3 @@ class DataGenerator:
         description = f"{random.choice(intros)} {random.choice(middles)} {random.choice(ends)}"
 
         return description
-
-

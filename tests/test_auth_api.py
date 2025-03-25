@@ -1,12 +1,14 @@
+import json
+
+from models.base_models import RegisterUserResponse
+
+
 class TestAuthAPI:
     def test_register_user(self, test_user, api_manager):
-        response = api_manager.auth_api.register_user(test_user)
-        response_data = response.json()
-
-        assert response_data["email"] == test_user["email"], "Email не совпадает"
-        assert "id" in response_data, "ID пользователя отсутствует в ответе"
-        assert "roles" in response_data, "Роли пользователя отсутствуют в ответе"
-        assert "USER" in response_data["roles"], "Роль USER должна быть у пользователя"
+        json_data = test_user.model_dump(mode='json')
+        response = api_manager.auth_api.register_user(json_data)
+        register_user_response = RegisterUserResponse(**response.json())
+        assert register_user_response.email == test_user.email, "Email не совпадает"
 
     def test_auth_user(self, api_manager, register_user):
         login_data = {
@@ -26,7 +28,7 @@ class TestAuthAPI:
             'password': '12345678aA'
         }
 
-        response = api_manager.auth_api.login_user(login_data)
+        response = api_manager.auth_api.login_user(login_data, expected_status=401)
         response_data = response.json()
         assert response_data['message'] == 'Неверный логин или пароль'
 
@@ -36,14 +38,13 @@ class TestAuthAPI:
             'password': register_user['password']
         }
 
-        response = api_manager.auth_api.login_user(login_data)
+        response = api_manager.auth_api.login_user(login_data, expected_status=401)
         response_data = response.json()
 
-        assert response_data['message'] == 'Пользователь не найден'
+        assert response_data['message'] == 'Неверный логин или пароль'
 
-    def test_auth_without_body(self, test_user, api_manager):
-        response = api_manager.auth_api.login_user(login_data=None)
+    def test_auth_without_body(self, api_manager):
+        response = api_manager.auth_api.login_user(login_data=None, expected_status=401)
         response_data = response.json()
 
-        assert response_data.status_code == 400
-        assert response_data['message'] == 'Неверные данные'
+        assert response_data['message'] == 'Неверный логин или пароль'

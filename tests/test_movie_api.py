@@ -1,3 +1,8 @@
+import pytest
+
+from conftest import super_admin, common_user
+
+
 class TestMovieAPI:
     def test_get_movies(self, api_manager):
         response = api_manager.movie_api.get_movies()
@@ -24,20 +29,67 @@ class TestMovieAPI:
         assert response_data['name'] == create_movie['name']
         assert response_data['description'] == create_movie['description']
 
-    def test_create_movie(self, api_manager, movie_data, auth_admin_user):
-        response = api_manager.movie_api.create_movie(movie_data)
+    def test_create_movie(self, movie_data, super_admin):
+        response = super_admin.api.movie_api.create_movie(movie_data)
         response_data = response.json()
 
         assert response_data is not None
         assert response_data['name'] == movie_data['name']
         assert response_data['description'] == movie_data['description']
 
-    def test_delete_movie(self, api_manager, create_movie):
-        response = api_manager.movie_api.delete_movie(create_movie['id'])
+    def test_delete_movie(self, super_admin, create_movie):
+        response = super_admin.api.movie_api.delete_movie(create_movie['id'])
         response_data = response.json()
-        response_get_movie = api_manager.movie_api.get_movie_by_id(create_movie['id'], expected_status=404)
+        response_get_movie = super_admin.api.movie_api.get_movie_by_id(create_movie['id'], expected_status=404)
         response_get_data = response_get_movie.json()
 
         assert response_data is not None
         assert response_data['id'] == create_movie['id']
         assert response_get_data['message'] == 'Фильм не найден'
+
+    def test_create_movie_with_non_admin_user(self, movie_data, common_user):
+        response = common_user.api.movie_api.create_movie(movie_data, expected_status=403)
+        response_data = response.json()
+
+        assert response_data['message'] == 'Forbidden resource'
+
+    @pytest.mark.parametrize(
+        "locations, genre_id, min_price, max_price",
+        [
+            (["MSK"], 1, 50, 100),
+            (["SPB"], 2, 100, 300),
+            (["MSK", "SPB"], 3, 200, 500),
+        ]
+    )
+    def test_get_movies_with_filter(self, api_manager, locations, genre_id, min_price, max_price):
+        params = {
+            'locations': locations,
+            'genreId': genre_id,
+            'minPrice': min_price,
+            'maxPrice': max_price
+        }
+        response = api_manager.movie_api.get_movies(params=params)
+        response_data = response.json()
+        assert response_data is not None
+        for movie in response_data['movies']:
+            assert movie['location'] in locations
+            assert movie['genreId'] == genre_id
+            assert min_price <= movie['price'] <= max_price
+
+    @pytest.fixture
+    def role(self, request):
+        return request.getfixturevalue(request.param)
+
+    @pytest.mark.parametrize("role,status", [('admin', 403), ('common_user', 403), ('super_admin', 200)],
+                             indirect=['role'])
+    def test_delete_movie_with_diff_role(self, role, create_movie, status):
+        response = role.api.movie_api.delete_movie(create_movie['id'], expected_status=status)
+        if status == 403:
+            response_data = response.json()
+            assert response_data['message'] == 'Forbidden resource'
+        else:
+            response_data = response.json()
+            assert response_data['id'] == create_movie['id']
+            response_get_movie = role.api.movie_api.get_movie_by_id(create_movie['id'], expected_status=404)
+            response_get_data = response_get_movie.json()
+            assert response_get_data['message'] == 'Фильм не найден'

@@ -1,4 +1,6 @@
-from constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT
+import json
+
+from constants.constants import REGISTER_ENDPOINT, LOGIN_ENDPOINT
 from custom_requester.custom_requester import CustomRequester
 
 
@@ -23,7 +25,7 @@ class AuthAPI(CustomRequester):
             expected_status=expected_status
         )
 
-    def login_user(self, login_data, expected_status=201):
+    def login_user(self, login_data, expected_status=200):
         """
         Авторизация пользователя.
         :param login_data: Данные для логина.

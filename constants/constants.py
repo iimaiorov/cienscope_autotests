@@ -1,0 +1,6 @@
+LOGIN_ENDPOINT = "login"
+REGISTER_ENDPOINT = "register"
+MOVIE_ENDPOINT = "movies"
+RED = '\033[91m'
+GREEN = '\033[92m'
+RESET = '\033[0m'
