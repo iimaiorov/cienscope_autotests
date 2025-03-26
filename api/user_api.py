@@ -18,7 +18,7 @@ class UserAPI(CustomRequester):
         """
         return self.send_request(
             method="GET",
-            endpoint=f"/user/{user_id}",
+            endpoint=f"user/{user_id}",
             expected_status=expected_status
         )
 

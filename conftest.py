@@ -1,16 +1,23 @@
-import json
+import datetime
 
 import requests
 import pytest
 import os
+import dotenv
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from api.api_manager import ApiManager
 from constants.roles import Roles
+from db_requester.models import UserDBModel
 from resources.user_creds import SuperAdminCreds
 from tests.test_user_api import TestUser
 from utils.data_generator import DataGenerator
 from entities.user import User
-from models.base_models import TestUser, RegisterUserResponse
+from models.user_model import TestUser
+
+dotenv.load_dotenv()
 
 
 @pytest.fixture()
@@ -108,7 +115,7 @@ def super_admin(user_session):
     new_session = user_session()
 
     super_admin = User(
-        SuperAdminCreds.USERNAME,
+        SuperAdminCreds.EMAIL,
         SuperAdminCreds.PASSWORD,
         list(Roles.SUPER_ADMIN.value),
         new_session)
@@ -155,3 +162,23 @@ def common_user(user_session, super_admin, creation_user_data):
     super_admin.api.user_api.create_user(creation_user_data)
     common_user.api.auth_api.authenticate(common_user.creds)
     return common_user
+
+
+dotenv.load_dotenv()
+engine = create_engine(
+    f"postgresql+psycopg2://{os.getenv('USERNAMEDB')}:{os.getenv('PASSWORDDB')}@{os.getenv('HOST')}:{os.getenv('PORT')}/{os.getenv('DATABASE_NAME')}")  # Создаем движок (engine) для подключения к базе данных
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)  # Создаем фабрику сессий
+
+
+@pytest.fixture(scope="module")
+def db_session():
+    """
+    Фикстура, которая создает и возвращает сессию для работы с базой данных.
+    После завершения теста сессия автоматически закрывается.
+    """
+    # Создаем новую сессию
+    db_session = SessionLocal()
+    # Возвращаем сессию в тест
+    yield db_session
+    # Закрываем сессию после завершения теста
+    db_session.close()

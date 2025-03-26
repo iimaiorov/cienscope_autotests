@@ -1,4 +1,4 @@
-from models.base_models import RegisterUserResponse
+from models.register_user_model import RegisterUserResponse
 
 
 class TestUser:
@@ -22,4 +22,6 @@ class TestUser:
         assert response_by_id.get('verified') is True
 
     def test_get_user_by_id_common_user(self, common_user):
-        common_user.api.user_api.get_user(common_user.email, expected_status=403)
+        response_data = common_user.api.user_api.get_user(common_user.email, expected_status=403).json()
+
+        assert response_data['message'] == 'Forbidden resource'
